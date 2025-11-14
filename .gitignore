@@ -1,0 +1,21 @@
+# Quarto build artifacts
+_book/
+_freeze/
+
+# R session files
+.RData
+.Rhistory
+.Ruserdata
+.Rproj.user/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# renv caches (keep lockfile)
+renv/library/
+renv/staging/
+renv/cache/
+
+# Optional: ignore data if sensitive
+data/

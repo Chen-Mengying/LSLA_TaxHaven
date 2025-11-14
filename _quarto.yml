@@ -1,0 +1,38 @@
+project:
+  type: book
+
+book:
+  title: "The Role of Tax Havens in Global Land Investments"
+  author: "Mengying"
+  date: "2025/11/11"
+  chapters:
+    - index.qmd
+    - sections/introduction.qmd
+    - sections/methodology.qmd
+    - sections/analysis.qmd
+    - sections/discussion.qmd
+    - sections/conclusion.qmd
+    - sections/references.qmd
+    - sections/appendix.qmd
+
+#bibliography: references.bib
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+  pdf:
+    documentclass: scrreprt
+
+editor: visual
+  
+execute:
+  echo: false        # do not show the code
+  warning: false
+  message: false
+  cache: true
+  freeze: auto       # Only re-run pages that have been modified
+  
+  
+  

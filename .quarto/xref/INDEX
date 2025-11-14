@@ -1,0 +1,56 @@
+{
+  "index.qmd": {
+    "index.html": "8c6ee289"
+  },
+  "intro.qmd": {
+    "intro.html": "3713e86d"
+  },
+  "summary.qmd": {
+    "summary.html": "56608543"
+  },
+  "references.qmd": {
+    "references.html": "489a38fc"
+  },
+  "sections/intro.qmd": {
+    "intro.html": "aefe6ecb"
+  },
+  "sections/summary.qmd": {
+    "summary.html": "a3925f89"
+  },
+  "sections/references.qmd": {
+    "references.html": "cd868af3"
+  },
+  "sections/background.qmd": {
+    "background.html": "10bad41e"
+  },
+  "sections/objectives.qmd": {
+    "objectives.html": "16855dca"
+  },
+  "sections/methodology.qmd": {
+    "methodology.html": "c5c4a8ca"
+  },
+  "sections/expected_results.qmd": {
+    "expected_results.html": "204a257b"
+  },
+  "sections/timeline.qmd": {
+    "timeline.html": "5f1521c6"
+  },
+  "sections/policy_relevance.qmd": {
+    "policy_relevance.html": "2d6aebcc"
+  },
+  "sections/introduction.qmd": {
+    "introduction.html": "d339ac82"
+  },
+  "sections/analysis.qmd": {
+    "analysis.html": "485d4aff"
+  },
+  "sections/discussion.qmd": {
+    "discussion.html": "e4c907a4"
+  },
+  "sections/conclusion.qmd": {
+    "conclusion.html": "bf581477"
+  },
+  "sections/appendix.qmd": {
+    "appendix.html": "e3f183fa"
+  }
+}

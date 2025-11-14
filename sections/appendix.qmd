@@ -1,0 +1,26 @@
+# Appendix {.unnumbered}
+
+```{r}
+#| label: appendix
+
+source("globals.R")
+```
+
+-   List of Tax Haven Countries
+
+-   List of R packages
+
+-   Variable Definition Table
+
+-   Descriptive Summary Table
+
+```{r}
+#| label: List of R packages and version
+
+knitr::kable(
+  pkg_versions_df,
+  caption = "Loaded R packages and their versions",
+  align = c("l", "c")
+) |> 
+  kableExtra::kable_styling(full_width = FALSE, position = "center", bootstrap_options = c("striped", "hover"))
+```

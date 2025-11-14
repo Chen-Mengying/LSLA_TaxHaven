@@ -1,0 +1,21 @@
+# Data and Methodology
+
+-   ***Data sources:** Land Matrix (deals), ORBIS (ownership structures), and a custom tax haven list (20 countries).*
+-   ***Sample:** Deals currently `in operation.`*
+-   ***Matching method:** Flag investors as `is_tax_haven = TRUE/FALSE` using ISO codes.*
+-   ***Analytical framework:***
+    -   *Distribution analysis (scale, time, and sectoral trends)*
+    -   *Network analysis (connectivity and centrality)*
+    -   *Role analysis (position in ownership chains)*
+    -   *Impact analysis (social and environmental risks)*
+
+## Data Preparation
+
+-   Select only “in operation” deals using `current_implementation_status`.
+-   Match investor registration countries against tax haven lists (e.g., Tax Haven Index
+-   Create a binary variable `is_tax_haven = TRUE/FALSE`.
+
+### Planned Outputs
+
+-   Summary table of dataset size (deals, investors, tax haven share).
+-   Count of unique investors and target countries.

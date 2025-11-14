@@ -1,0 +1,11 @@
+# Introduction
+
+-   *Briefly introduce the financialisation of large-scale land acquisitions (LSLAs);*
+-   *Explain why tax havens matter — their role in concealing ownership and facilitating transnational investment flows;*
+-   *Present the research objective: to analyze the scale, geography, and network position of tax haven investors and their link with negative impacts (conflicts, displacement, environmental degradation).*
+
+Large-scale land acquisitions (LSLAs) have become deeply embedded in global financial structures. Offshore jurisdictions — commonly known as **tax havens** — play an increasingly central role by hosting investment vehicles that channel international capital into agricultural and resource-rich lands.
+
+These offshore structures obscure ownership chains and make it difficult to identify the **ultimate beneficial owners (UBOs)** behind major land investments.
+
+This research aims to contribute to the International Land Coalition (ILC) and Land Matrix initiatives to enhance **transparency and accountability** in land governance.

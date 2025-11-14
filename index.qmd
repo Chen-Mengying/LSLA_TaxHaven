@@ -1,0 +1,5 @@
+# Proposal Overview {.unnumbered}
+
+This Quarto book presents the proposal draft for the research project on **the role of tax havens in global land investments**, based on the merged Land Matrix–ORBIS dataset.
+
+The goal is to understand how offshore financial centres influence land acquisition networks and their implications for transparency, governance, and accountability.

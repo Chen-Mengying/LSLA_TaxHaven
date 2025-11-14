@@ -1,0 +1,93 @@
+# Analysis
+
+```{r init}
+#| label: Analysis
+
+source("globals.R")
+```
+
+## Data Overview
+
+### **Expected:**
+
+-   fig/text: Data coverage and share of “in operation” deals in the total deals.
+
+-   xxxx unique investors identified, around xxxx% of investors registered in tax havens.
+
+-   fig: Temporal distribution of land deals
+
+### Data availability
+
+```{r}
+#| label: check-availability
+
+# check data.csv 
+data_availability(
+  data_name = "data",
+  fields = c("initiation_year", "current_intention_of_investment", "investment_type", "target_country_code_alpha2","world_region")
+)
+
+# check desag.csv
+data_availability(
+  data_name = "desag",
+  fields = c("role", "country", "target_country_code_alpha2")
+)
+```
+
+```{r}
+#| label: value-summary
+
+value_summary(data, "current_implementation_status")
+
+value_summary(data, "world_region")
+```
+
+## Distribution Patterns
+
+1.  bar: Share of tax haven vs. non–tax haven investments
+
+2.  line: Evolution of tax haven investments over time -\> Analysis of whether the use of tax havens has increased over time
+
+3.  bar: Top 10 tax haven investor countries -\> Identify the primary source countries of tax havens
+
+4.  bar: Top 10 target countries for tax haven investors -\> Identify the principal countries of investment
+
+5.  Map: Global investment flows from tax havens to target countries -\> Visualising the global investment pathways of tax havens
+
+6.  bar: Tax haven investments by sector -\> Comparing the proportion of tax havens across different investment sectors
+
+## Network Analysis
+
+-   Network graph
+
+    -   highlighting tax haven nodes
+
+-   Table of top 10 countries by centrality (degree, betweenness)
+
+    -   evaluate the bridging role of tax havens;
+
+1.  network map: Country-to-country investment network -\> Illustrating the global investment structure and the locations of tax haven nodes
+
+2.  table: Top 10 countries by betweenness centrality -\> Identifying which tax havens serve as key bridge nodes is crucial.
+
+3.  network map: Regional clusters of tax havens -\> Demonstrating the clustering characteristics of Caribbean, European and Asian tax havens
+
+4.  line: Network density evolution of tax haven participation -\> Monitor network connectivity trends over time
+
+## Role-Level Analysis
+
+-   Examine how tax haven entities appear across **investment roles**:
+
+    -   Operating Company (OC)
+
+    -   Shareholder (SH)
+
+    -   Controlling Shareholder (CSH)
+
+    -   Global Ultimate Owner (GUO)
+
+-   Summary table: Number of tax haven entities by role. -\> Concentration of tax havens across OC, SH, CSH, and GUO tiers
+
+-   Sankey diagram: Country → Role → Target country. -\> Illustrating investment pathways and the role of tax havens within them
+
+## Impact Assessment
