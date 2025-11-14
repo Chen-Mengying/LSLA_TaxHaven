@@ -29,6 +29,17 @@ desag <- read_csv(here("data", "desag_data.csv")) |> janitor::clean_names()
 investors <- read_csv(here("data", "investors.csv")) |> janitor::clean_names()
 tax_haven <- read_csv(here("data", "tax_haven_list.csv")) |> janitor::clean_names()
 
+# link tax_haven_list.csv to desag_data.csv
+desag <- desag |>
+  rename(country_iso2 = country) |>
+  left_join(
+    tax_haven |>
+      select(iso2) |>
+      mutate(is_tax_haven = TRUE),
+    by = c("country_iso2" = "iso2")
+  ) |>
+  mutate(is_tax_haven = replace_na(is_tax_haven, FALSE))
+
 # !!! in coutries.json, for one iso2 there are more than one country or region matched
 # so here I use countries_sf_all to keep all the region
 # and use countries_sf_main to store the mainland
@@ -90,12 +101,16 @@ data_availability <- function(data_name, fields, caption = NULL) {
     )
 }
 
-# Function "value_summary" is to check the distribution of data$column
+#----------------------------------
+# Function "value_summary" to check the distribution of a column in a dataset
 value_summary <- function(data, column) {
+  
+  # Automatically capture the data object's name (e.g. "data", "desag", etc.)
+  data_name <- deparse(substitute(data))
   
   col_data <- data[[column]]
   
-  # Count the number of occurrences for each unique value
+  # Count occurrences of each unique value
   result <- tibble::tibble(Value = col_data) |>
     dplyr::count(Value, name = "Count") |>
     dplyr::mutate(
@@ -104,11 +119,11 @@ value_summary <- function(data, column) {
     ) |>
     dplyr::arrange(desc(Count))
   
-  # output table
+  # Output table with improved caption
   knitr::kable(
     result,
     align = c("l", "r", "r"),
-    caption = paste0("Value distribution in `", column, "`")
+    caption = paste0("Value distribution of `", column, "` in dataset `", data_name, "`")
   ) |>
     kableExtra::kable_styling(
       full_width = FALSE,

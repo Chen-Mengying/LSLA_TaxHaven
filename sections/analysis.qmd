@@ -42,6 +42,8 @@ value_summary(data, "current_implementation_status")
 value_summary(data, "world_region")
 ```
 
+### How many deals involve tax havens?
+
 ## Distribution Patterns
 
 1.  bar: Share of tax haven vs. non–tax haven investments

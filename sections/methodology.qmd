@@ -1,5 +1,11 @@
 # Data and Methodology
 
+```{r}
+#| label: Methodology
+
+source("globals.R")
+```
+
 -   ***Data sources:** Land Matrix (deals), ORBIS (ownership structures), and a custom tax haven list (20 countries).*
 -   ***Sample:** Deals currently `in operation.`*
 -   ***Matching method:** Flag investors as `is_tax_haven = TRUE/FALSE` using ISO codes.*
@@ -12,6 +18,11 @@
 ## Data Preparation
 
 -   Select only “in operation” deals using `current_implementation_status`.
+
+```{r}
+
+```
+
 -   Match investor registration countries against tax haven lists (e.g., Tax Haven Index
 -   Create a binary variable `is_tax_haven = TRUE/FALSE`.
 
