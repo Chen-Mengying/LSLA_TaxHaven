@@ -23,6 +23,7 @@ pkg_versions_df <- data.frame(
 ) |> 
   dplyr::arrange(Package)
 
+# =================================================
 # =========== Read Data ===========================
 data <- read_csv(here("data", "data.csv")) |> janitor::clean_names()
 desag <- read_csv(here("data", "desag_data.csv")) |> janitor::clean_names()
@@ -40,6 +41,17 @@ desag <- desag |>
   ) |>
   mutate(is_tax_haven = replace_na(is_tax_haven, FALSE))
 
+# link tax_haven_list.csv to investors.csv
+investors <- investors |>
+  rename(country_iso2 = country) |>
+  left_join(
+    tax_haven |>
+      select(iso2) |>
+      mutate(from_tax_haven = TRUE),
+    by = c("country_iso2" = "iso2")
+  ) |>
+  mutate(from_tax_haven = replace_na(from_tax_haven, FALSE))
+
 # !!! in coutries.json, for one iso2 there are more than one country or region matched
 # so here I use countries_sf_all to keep all the region
 # and use countries_sf_main to store the mainland
@@ -50,11 +62,23 @@ countries_sf_main <- countries_sf_all |>
   ungroup() |>
   select(COUNTRY, ISO, COUNTRYAFF, AFF_ISO, geometry)
 
+
+#=========================================================
 # ============ Custom Functions ==========================
 # Function "availability_table": check missing data with sorting
 data_availability <- function(data_name, fields, caption = NULL) {
   df <- get(data_name, inherits = TRUE)
   n_total <- nrow(df)
+  
+  # Check if the field exists
+  missing_fields <- setdiff(fields, names(df))
+  if (length(missing_fields) > 0) {
+    msg <- paste0(
+      "These fields are missing from dataset '", data_name, "':\n",
+      paste("  -", missing_fields, collapse = "\n")
+    )
+    stop(msg)
+  }
   
   # Definition of missing value detection
   is_missing_vec <- function(x) {
@@ -62,7 +86,8 @@ data_availability <- function(data_name, fields, caption = NULL) {
       vapply(x, function(el) {
         if (is.null(el) || length(el) == 0) return(TRUE)
         if (all(is.na(el))) return(TRUE)
-        if (is.character(el)) all(is.na(el) | trimws(el) == "" | el %in% c("NA","N/A","NULL","null")) 
+        if (is.character(el))
+          all(is.na(el) | trimws(el) == "" | el %in% c("NA","N/A","NULL","null"))
         else FALSE
       }, logical(1))
     } else if (is.character(x)) {
@@ -83,7 +108,9 @@ data_availability <- function(data_name, fields, caption = NULL) {
       Missing_Count = n_miss,
       Missing_Rate  = n_miss / n_total
     )
-  }) |> dplyr::bind_rows()|> dplyr::arrange(desc(Missing_Rate))
+  }) |>
+    dplyr::bind_rows() |>
+    dplyr::arrange(dplyr::desc(Missing_Rate))
   
   # Caption
   dataset_label <- paste0("`", data_name, "`")

@@ -19,3 +19,6 @@ renv/cache/
 
 # Optional: ignore data if sensitive
 data/
+
+/.quarto/
+**/*.quarto_ipynb

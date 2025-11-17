@@ -24,25 +24,165 @@ source("globals.R")
 # check data.csv 
 data_availability(
   data_name = "data",
-  fields = c("initiation_year", "current_intention_of_investment", "investment_type", "target_country_code_alpha2","world_region")
+  fields = c("initiation_year", "current_intention_of_investment", "investment_type", "target_country_code_alpha2","world_region","country_iso_code")
 )
 
 # check desag.csv
 data_availability(
   data_name = "desag",
-  fields = c("role", "country", "target_country_code_alpha2")
+  fields = c("role", "country_iso2", "target_country_code_alpha2", "is_tax_haven")
 )
+
 ```
 
 ```{r}
 #| label: value-summary
 
 value_summary(data, "current_implementation_status")
-
 value_summary(data, "world_region")
+
+value_summary(desag, "is_tax_haven")
+value_summary(desag, "role")
+
+value_summary(investors, "from_tax_haven")
 ```
 
 ### How many deals involve tax havens?
+
+```{r}
+#| label: deals-involve-TaxHaven
+
+deal_taxhaven <- desag |>
+  group_by(deal_id) |>
+  summarise(
+    num_tax = sum(is_tax_haven, na.rm = TRUE),
+    any_tax_haven = num_tax > 0,
+    current_implementation_status = paste(unique(current_implementation_status), collapse = ", "),
+    .groups = "drop"
+  )
+
+value_summary(deal_taxhaven, "any_tax_haven")
+value_summary(deal_taxhaven, "num_tax")
+
+deal_taxhaven |>
+  filter(current_implementation_status == "In operation") |>
+  summarise(
+    total_in_operation = n(),
+    tax_haven_deals    = sum(any_tax_haven),
+    share              = scales::percent(tax_haven_deals / total_in_operation, accuracy = 0.1)
+  ) |>
+  knitr::kable(
+    caption = "In operation deals involving tax haven investors",
+    align = "c"
+  ) |>
+  kableExtra::kable_styling(full_width = FALSE, position = "center")
+
+
+```
+
+To quantify the involvement of tax-haven–registered investors, we aggregated the investor-level information in *desag_data* to the deal level. **A deal is considered to involve a tax haven if at least one investor within its ownership chain is registered in a jurisdiction listed as a tax haven.**
+
+The results show that **1318** deals (representing **24.7%** of all deals) involve at least one tax-haven investor. This indicates that tax-haven jurisdictions play a non-negligible role in land investment structures, either through shareholders, controlling shareholders, or ultimate owners.
+
+When considering only deals currently ***in operation***, **946** deals out of **3446** are associated with tax-haven investors, corresponding to **27.5%**.
+
+### How many unique investors involve tax havens?
+
+```{r}
+#| label: investor-involve-TaxHaven
+
+investor_taxhaven <- desag |>
+  group_by(bvd_id_number) |>
+  summarise(
+    investor_country = paste(unique(country_iso2), collapse = ", "),
+    roles = paste(unique(role), collapse = ", "),
+    num_deals = n_distinct(deal_id),
+    is_tax_haven_investor = any(is_tax_haven, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+value_summary(investor_taxhaven, "is_tax_haven_investor")
+
+
+```
+
+Across the entire database, we identified **12,405 unique investors** involved in at least one land deal.
+Among them, **898 investors** are registered in jurisdictions classified as tax havens, representing **7.2%** of all unique investors.
+
+```{r}
+#| label: investor-from-TaxHaven
+
+# fliter the investor registered in tax haven
+taxhaven_roles <- investor_taxhaven |>
+  filter(is_tax_haven_investor == TRUE) |>
+  tidyr::separate_rows(roles, sep = ",") |>
+  mutate(roles = trimws(roles))
+
+value_summary(taxhaven_roles, "roles")
+```
+
+### How does the number of land deals changed over time?
+
+```{r}
+#| label: fig-temporal-distribution
+#| fig-cap: "Temporal distribution of land deals"
+
+data |> 
+  filter(!is.na(initiation_year)) |> 
+  count(initiation_year, name = "n_deals") |> 
+  ggplot(aes(x = initiation_year, y = n_deals)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(
+    x = "Initiation year",
+    y = "Number of deals",
+    title = "Temporal distribution of land deals"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| label: fig-temporal-distribution-operation
+#| fig-cap: "Temporal distribution of land deals in operation"
+#| echo: true
+
+data |> 
+  filter(
+    !is.na(initiation_year),
+    current_implementation_status == "In operation"
+  ) |> 
+  count(initiation_year, name = "n_deals") |> 
+  ggplot(aes(x = initiation_year, y = n_deals)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(
+    x = "Initiation year",
+    y = "Number of deals",
+    title = "Temporal distribution of land deals in operation"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+data |> 
+  left_join(deal_taxhaven, by = "deal_id") |> 
+  filter(initiation_year >= 2000) |> 
+  count(initiation_year, any_tax_haven) |> 
+  ggplot(aes(x = initiation_year, y = n, color = any_tax_haven)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("grey40", "red"), 
+                     labels = c("No tax haven", "Tax haven involved")) +
+  labs(
+    x = "Initiation year",
+    y = "Number of deals",
+    color = NULL,
+    title = "Temporal distribution of land deals by tax haven involvement"
+  ) +
+  theme_minimal()
+
+```
 
 ## Distribution Patterns
 

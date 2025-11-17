@@ -19,9 +19,7 @@ source("globals.R")
 
 -   Select only “in operation” deals using `current_implementation_status`.
 
-```{r}
-
-```
+<!-- -->
 
 -   Match investor registration countries against tax haven lists (e.g., Tax Haven Index
 -   Create a binary variable `is_tax_haven = TRUE/FALSE`.
