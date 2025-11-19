@@ -62,7 +62,6 @@ countries_sf_main <- countries_sf_all |>
   ungroup() |>
   select(COUNTRY, ISO, COUNTRYAFF, AFF_ISO, geometry)
 
-
 #=========================================================
 # ============ Custom Functions ==========================
 # Function "availability_table": check missing data with sorting
@@ -128,7 +127,7 @@ data_availability <- function(data_name, fields, caption = NULL) {
     )
 }
 
-#----------------------------------
+# ============================
 # Function "value_summary" to check the distribution of a column in a dataset
 value_summary <- function(data, column) {
   
@@ -158,5 +157,3 @@ value_summary <- function(data, column) {
       bootstrap_options = c("striped", "hover")
     )
 }
-
-

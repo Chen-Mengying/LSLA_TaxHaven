@@ -30,7 +30,7 @@ data_availability(
 # check desag.csv
 data_availability(
   data_name = "desag",
-  fields = c("role", "country_iso2", "target_country_code_alpha2", "is_tax_haven")
+  fields = c("role", "country_iso2", "target_country_code_alpha2", "is_tax_haven", "current_implementation_status","initiation_year")
 )
 
 ```
@@ -57,7 +57,8 @@ deal_taxhaven <- desag |>
   summarise(
     num_tax = sum(is_tax_haven, na.rm = TRUE),
     any_tax_haven = num_tax > 0,
-    current_implementation_status = paste(unique(current_implementation_status), collapse = ", "),
+    current_implementation_status = first(current_implementation_status),
+    initiation_year = first(initiation_year),
     .groups = "drop"
   )
 
@@ -102,12 +103,9 @@ investor_taxhaven <- desag |>
   )
 
 value_summary(investor_taxhaven, "is_tax_haven_investor")
-
-
 ```
 
-Across the entire database, we identified **12,405 unique investors** involved in at least one land deal.
-Among them, **898 investors** are registered in jurisdictions classified as tax havens, representing **7.2%** of all unique investors.
+Across the entire database, we identified **12,405 unique investors** involved in at least one land deal. Among them, **898 investors** are registered in jurisdictions classified as tax havens, representing **7.2%** of all unique investors.
 
 ```{r}
 #| label: investor-from-TaxHaven
@@ -125,7 +123,7 @@ value_summary(taxhaven_roles, "roles")
 
 ```{r}
 #| label: fig-temporal-distribution
-#| fig-cap: "Temporal distribution of land deals"
+#| fig-cap: "Temporal distribution of total land deals"
 
 data |> 
   filter(!is.na(initiation_year)) |> 
@@ -144,11 +142,10 @@ data |>
 ```{r}
 #| label: fig-temporal-distribution-operation
 #| fig-cap: "Temporal distribution of land deals in operation"
-#| echo: true
 
 data |> 
   filter(
-    !is.na(initiation_year),
+    initiation_year >= 2000,
     current_implementation_status == "In operation"
   ) |> 
   count(initiation_year, name = "n_deals") |> 
@@ -162,23 +159,31 @@ data |>
   ) +
   theme_minimal()
 
-```
-
-```{r}
-data |> 
-  left_join(deal_taxhaven, by = "deal_id") |> 
-  filter(initiation_year >= 2000) |> 
-  count(initiation_year, any_tax_haven) |> 
-  ggplot(aes(x = initiation_year, y = n, color = any_tax_haven)) +
-  geom_line(linewidth = 1) +
-  geom_point(size = 2) +
-  scale_color_manual(values = c("grey40", "red"), 
-                     labels = c("No tax haven", "Tax haven involved")) +
+# In-operation deals since 2000: Total vs Tax-haven involved
+deal_taxhaven |> 
+  filter(
+    initiation_year >= 2000,
+    current_implementation_status == "In operation"
+  ) |> 
+  group_by(initiation_year) |> 
+  summarise(
+    total = n(),
+    taxhaven = sum(any_tax_haven),
+    .groups = "drop"
+  ) |> 
+  ggplot(aes(x = initiation_year)) +
+  geom_line(aes(y = total, color = "Total deals"), linewidth = 1) +
+  geom_point(aes(y = total, color = "Total deals"), size = 2) +
+  geom_line(aes(y = taxhaven, color = "Tax-haven deals"), linewidth = 1) +
+  geom_point(aes(y = taxhaven, color = "Tax-haven deals"), size = 2) +
+  scale_color_manual(
+    values = c("Total deals" = "steelblue", "Tax-haven deals" = "red")
+  ) +
   labs(
     x = "Initiation year",
     y = "Number of deals",
     color = NULL,
-    title = "Temporal distribution of land deals by tax haven involvement"
+    title = "In-operation deals since 2000: Total vs Tax-haven involved"
   ) +
   theme_minimal()
 
@@ -194,9 +199,341 @@ data |>
 
 4.  bar: Top 10 target countries for tax haven investors -\> Identify the principal countries of investment
 
-5.  Map: Global investment flows from tax havens to target countries -\> Visualising the global investment pathways of tax havens
+5.  bar: Tax haven investments by sector -\> Comparing the proportion of tax havens across different investment sectors
 
-6.  bar: Tax haven investments by sector -\> Comparing the proportion of tax havens across different investment sectors
+6.  Map: Global investment flows from tax havens to target countries -\> Visualising the global investment pathways of tax havens
+
+### Evolution of tax haven investments over time
+
+```{r}
+#| label: fig-temporal-distribution-taxhaven
+#| fig-cap: "Temporal distribution of land deals in operation"
+
+deal_taxhaven |> 
+  filter(initiation_year >= 2000) |> 
+  count(initiation_year, any_tax_haven) |> 
+  ggplot(aes(x = initiation_year, y = n, color = any_tax_haven)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_color_manual(
+    values = c("FALSE" = "grey40", "TRUE" = "red"),
+    labels = c("No tax haven", "Tax haven involved")
+  ) +
+  labs(
+    x = "Initiation year",
+    y = "Number of deals",
+    color = NULL,
+    title = "Temporal distribution of land deals by tax haven involvement"
+  ) +
+  theme_minimal()
+```
+
+### Top 10 Tax Haven Investor Countries
+
+#### Which tax haven countries exert the strongest influence on the global land investment network?
+
+```{r}
+#| label: fig-Top10-taxhaven-investor-countries
+#| fig-cap: "Top 10 Tax Haven Investor Countries(appearances)"
+
+desag |>
+  filter(is_tax_haven == TRUE) |>
+  count(country_iso2, name = "n_investors") |>
+  left_join(tax_haven |> select(iso2, country_name), 
+            by = c("country_iso2" = "iso2")) |>
+  mutate(country_name = if_else(is.na(country_name), country_iso2, country_name)) |>
+  mutate(country_name = forcats::fct_reorder(country_name, n_investors)) |>
+  top_n(10, n_investors) |>
+  ggplot(aes(x = country_name, y = n_investors)) +
+  geom_col(fill = "red") +
+  coord_flip() +
+  labs(
+    x = "Investor Country",
+    y = "Number of tax haven investors",
+    title = "Top 10 Tax Haven Investor Countries"
+  ) +
+  theme_minimal()
+```
+
+#### Which countries provide the largest number of offshore entities?
+
+```{r}
+#| label: fig-Top10-taxhaven-investor-countries-unique
+#| fig-cap: "Top 10 Tax Haven Investor Countries(Unique Investors)"
+
+desag |>
+  filter(is_tax_haven == TRUE) |>
+  distinct(bvd_id_number, country_iso2) |>   # 🔥 unique investor × country
+  count(country_iso2, name = "n_unique_investors") |> 
+  left_join(tax_haven |> select(iso2, country_name),
+            by = c("country_iso2" = "iso2")) |> 
+  mutate(
+    country_name = if_else(is.na(country_name), country_iso2, country_name),
+    country_name = forcats::fct_reorder(country_name, n_unique_investors)
+  ) |> 
+  top_n(10, n_unique_investors) |> 
+  ggplot(aes(x = country_name, y = n_unique_investors)) +
+  geom_col(fill = "red") +
+  coord_flip() +
+  labs(
+    x = "Investor Country",
+    y = "Number of unique tax haven investors",
+    title = "Top 10 Tax Haven Investor Countries (Unique Investors)"
+  ) +
+  theme_minimal()
+
+```
+
+-   **Singapore is dominant in both frequency and breadth**, meaning it is both a *major offshore incorporation hub* **and** home to *highly active entities repeatedly participating in deals*.
+
+-   **Some jurisdictions (e.g., British Virgin Islands, Cyprus)** show **high appearance counts relative to the number of unique investors**, suggesting **a small number of extremely active offshore structures**.
+
+-   **Other jurisdictions (e.g., Netherlands, Mauritius)** host **many distinct offshore investors**, but each investor tends to participate in fewer deals.\
+    → This pattern reflects **distributed incorporation** rather than intensive participation.
+
+-   The comparison reveals **two different modes of offshore involvement** in land investments: **Concentrated influence** (few investors, highly active — e.g., Cyprus, BVI); **Broad-based incorporation** (many investors, moderate activity — e.g., the Netherlands, Mauritius).
+
+### Top 10 target countries for tax haven investors
+
+#### Which countries attract the most investment from tax haven investors?
+
+```{r}
+#| label: fig-Top10-target-for-taxhaven
+#| fig-cap: "Top 10 Target Countries for Tax Haven Investors"
+
+desag |>
+  filter(is_tax_haven == TRUE) |>
+  count(target_country_code_alpha2, name = "n_investments") |>
+  left_join(
+    countries_sf_all |> select(ISO, COUNTRY),
+    by = c("target_country_code_alpha2" = "ISO")
+  ) |>
+  mutate(COUNTRY = if_else(is.na(COUNTRY),
+                                target_country_code_alpha2, COUNTRY)) |>
+  mutate(COUNTRY = forcats::fct_reorder(COUNTRY, n_investments)) |>
+  top_n(10, n_investments) |>
+  ggplot(aes(x = COUNTRY, y = n_investments)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(
+    x = "Target Country",
+    y = "Number of investments involving tax haven investors",
+    title = "Top 10 Target Countries for Tax Haven Investors"
+  ) +
+  theme_minimal()
+```
+
+#### Which countries' land transactions are most affected by tax havens?
+
+```{r}
+#| label: fig-Top10-target-for-taxhaven-mostaffected
+#| fig-cap: "Top 10 Target Countries for Tax Haven Investors (Deal-level)"
+
+desag |>
+  filter(is_tax_haven == TRUE) |>
+  distinct(deal_id, target_country_code_alpha2) |>  # 🔥 deal level
+  count(target_country_code_alpha2, name = "n_deals") |>
+  left_join(
+    countries_sf_all |> select(ISO, COUNTRY),
+    by = c("target_country_code_alpha2" = "ISO")
+  ) |>
+  mutate(COUNTRY = if_else(is.na(COUNTRY),
+                           target_country_code_alpha2, COUNTRY)) |>
+  mutate(COUNTRY = forcats::fct_reorder(COUNTRY, n_deals)) |>
+  top_n(10, n_deals) |>
+  ggplot(aes(x = COUNTRY, y = n_deals)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(
+    x = "Target Country",
+    y = "Number of deals involving tax haven investors",
+    title = "Top 10 Target Countries for Tax Haven Investors (Deal-level)"
+  ) +
+  theme_minimal()
+
+```
+
+### Tax haven investments by sector
+
+```{r}
+#| label: cat_current_intention_of_investment
+#| 
+#=========================================================
+# ============ classify_intention ========================
+# 1) Preprocessing------------------------------------------------------------
+# Standardize case, remove spaces, and correct the misspelling CONVERSATION to CONSERVATION.
+desag <- desag |>
+  mutate(
+    current_intention_of_investment = current_intention_of_investment |>
+      toupper() |> str_trim(),
+    current_intention_of_investment = str_replace_all(
+      current_intention_of_investment,
+      "\\bCONVERSATION\\b", "CONSERVATION"
+    )
+  )
+
+# 2) Definition of classification detection function-----------------------------
+# whether it contains certain keywords
+has_any <- function(x, patterns) 
+  str_detect(x, str_c("\\b(", str_c(patterns, collapse="|"), ")\\b"))
+
+# 3) Rule: Process by priority using CASE WHEN (stop upon first match)-----------
+desag <- desag |>
+  mutate(
+    intention_investment_cat = case_when(
+      is.na(current_intention_of_investment) | current_intention_of_investment == "" ~ "NA",
+      
+      has_any(current_intention_of_investment,
+              c("BIOFUELS","RENEWABLE_ENERGY","WIND_FARM","SOLAR_PARK",
+                "OIL_GAS_EXTRACTION","BIOMASS_ENERGY_GENERATION")) ~ "Energy",
+      
+      has_any(current_intention_of_investment, c("MINING")) ~ "Mining",
+      
+      has_any(current_intention_of_investment,
+              c("FOOD_CROPS","NON_FOOD_AGRICULTURE","LIVESTOCK","FODDER",
+                "AGRICULTURE_UNSPECIFIED")) ~ "Agriculture",
+      
+      has_any(current_intention_of_investment,
+              c("CONSERVATION","CARBON")) ~ "Conservation and Carbon",
+      
+      has_any(current_intention_of_investment,
+              c("FOREST_LOGGING","TIMBER_PLANTATION","FORESTRY_UNSPECIFIED")) ~ "Forestry",
+      
+      has_any(current_intention_of_investment, c("TOURISM")) ~ "Tourism",
+      
+      has_any(current_intention_of_investment, c("INDUSTRY")) ~ "Industry",
+      
+      has_any(current_intention_of_investment, c("LAND_SPECULATION")) ~ "Land speculation",
+      
+      has_any(current_intention_of_investment, c("OTHER")) ~ "Other",
+      
+      TRUE ~ "Other" 
+    )
+  )
+```
+
+```{r}
+#| label: fig-taxhaven-by-sector
+#| fig-cap: "Tax Haven Investments by Sector (Share)"
+
+value_summary(desag, "intention_investment_cat")
+
+# Compute sector share of tax haven involvement
+sector_taxhaven <- desag |>
+  group_by(intention_investment_cat) |>
+  summarise(
+    total = n(),
+    taxhaven = sum(is_tax_haven, na.rm = TRUE),
+    share = taxhaven / total,
+    .groups = "drop"
+  ) |>
+  arrange(desc(share))
+
+# Plot percentage involvement
+sector_taxhaven |>
+  ggplot(aes(
+    x = forcats::fct_reorder(intention_investment_cat, share),
+    y = share
+  )) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    x = "Investment sector",
+    y = "Share of tax-haven investors",
+    title = "Tax Haven Investments by Sector (Share)"
+  ) +
+  theme_minimal()
+
+
+```
+
+```{r}
+sector_stacked <- desag |>
+  group_by(intention_investment_cat, is_tax_haven) |>
+  summarise(n = n(), .groups = "drop") |>
+  group_by(intention_investment_cat) |>
+  mutate(share = n / sum(n))
+
+sector_stacked |>
+  ggplot(aes(
+    x = intention_investment_cat,
+    y = share,
+    fill = is_tax_haven
+  )) +
+  geom_col(position = "fill") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_manual(
+    values = c("FALSE" = "grey70", "TRUE" = "red"),
+    labels = c("No tax haven", "Tax haven involved")
+  ) +
+  labs(
+    x = "Investment sector",
+    y = "Share of investor appearances",
+    fill = NULL,
+    title = "Tax Haven Involvement by Sector (Proportional Stacked Bar)"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+# Step 1: Compute counts by (tax haven investor country × sector)
+country_sector <- desag |>
+  filter(is_tax_haven == TRUE) |>
+  count(country_iso2, intention_investment_cat, name = "n") 
+
+# Step 2: Compute total per country
+country_total <- country_sector |>
+  group_by(country_iso2) |>
+  summarise(total = sum(n), .groups = "drop")
+
+# Step 3: Select top 10 tax haven investor countries
+top10_countries <- country_total |>
+  top_n(10, total) |>
+  arrange(desc(total)) |>
+  pull(country_iso2)
+
+# Step 4: Filter country_sector to only these 10 countries
+plot_df <- country_sector |>
+  filter(country_iso2 %in% top10_countries) |>
+  left_join(country_total, by = "country_iso2") |>
+  # reorder for nice plotting
+  mutate(country_iso2 = forcats::fct_reorder(country_iso2, total))
+
+# Step 5: Add readable country names
+plot_df <- plot_df |>
+  left_join(tax_haven |> select(iso2, country_name),
+            by = c("country_iso2" = "iso2")) |>
+  mutate(country_name = if_else(is.na(country_name),
+                                country_iso2,
+                                country_name)) |>
+  mutate(country_name = forcats::fct_reorder(country_name, total))
+  
+
+# Step 6: Plot stacked bar chart
+
+ggplot(plot_df, aes(
+  x = country_name,
+  y = n,
+  fill = intention_investment_cat
+)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    x = "Tax Haven Investor Country",
+    y = "Number of investor appearances",
+    fill = "Sector",
+    title = "Sector Composition of Top 10 Tax Haven Investor Countries",
+    subtitle = "Stacked bar: colour indicates investment sector"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+```
+
+### map
 
 ## Network Analysis
 
