@@ -24,6 +24,8 @@ format:
       - brand
   pdf:
     documentclass: scrreprt
+    toc: true
+    number-sections: true
 
 editor: visual
   

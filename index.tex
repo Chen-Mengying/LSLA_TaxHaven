@@ -106,6 +106,20 @@
  
 
 
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
 \KOMAoption{captions}{tableheading}
 \makeatletter
 \@ifpackageloaded{bookmark}{}{\usepackage{bookmark}}
@@ -202,17 +216,9 @@ governance, and accountability.
 \item
   \emph{Briefly introduce the financialisation of large-scale land
   acquisitions (LSLAs);}
-\end{itemize}
-
-\begin{itemize}
-\tightlist
 \item
   \emph{Explain why tax havens matter --- their role in concealing
   ownership and facilitating transnational investment flows;}
-\end{itemize}
-
-\begin{itemize}
-\tightlist
 \item
   \emph{Present the research objective: to analyze the scale, geography,
   and network position of tax haven investors and their link with
@@ -271,6 +277,10 @@ accountability} in land governance.
 \item
   Select only ``in operation'' deals using
   \texttt{current\_implementation\_status}.
+\end{itemize}
+
+\begin{itemize}
+\tightlist
 \item
   Match investor registration countries against tax haven lists (e.g.,
   Tax Haven Index
@@ -307,6 +317,242 @@ accountability} in land governance.
   fig: Temporal distribution of land deals
 \end{itemize}
 
+\subsection{Data availability}\label{data-availability}
+
+\begin{longtable}[t]{lrrrc}
+\caption{\label{tab:check-availability}Data availability in `data`}\\
+\toprule
+Field & Rows & NonMissing & Missing\_Count & No data (\%)\\
+\midrule
+initiation\_year & 5343 & 4661 & 682 & 12.8\%\\
+country\_iso\_code & 5343 & 5247 & 96 & 1.8\%\\
+world\_region & 5343 & 5260 & 83 & 1.6\%\\
+target\_country\_code\_alpha2 & 5343 & 5319 & 24 & 0.4\%\\
+current\_intention\_of\_investment & 5343 & 5323 & 20 & 0.4\%\\
+\addlinespace
+investment\_type & 5343 & 5323 & 20 & 0.4\%\\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[t]{lrrrc}
+\caption{\label{tab:check-availability}Data availability in `desag`}\\
+\toprule
+Field & Rows & NonMissing & Missing\_Count & No data (\%)\\
+\midrule
+initiation\_year & 25176 & 21843 & 3333 & 13.2\%\\
+country\_iso2 & 25176 & 21894 & 3282 & 13.0\%\\
+current\_implementation\_status & 25176 & 22282 & 2894 & 11.5\%\\
+target\_country\_code\_alpha2 & 25176 & 25145 & 31 & 0.1\%\\
+role & 25176 & 25176 & 0 & 0.0\%\\
+\addlinespace
+is\_tax\_haven & 25176 & 25176 & 0 & 0.0\%\\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[t]{lrrl}
+\caption{\label{tab:value-summary}Value distribution of `current_implementation_status` in dataset `data`}\\
+\toprule
+Value & Count & Total & Share\\
+\midrule
+In operation & 3446 & 5343 & 64.5\%\\
+NA & 700 & 5343 & 13.1\%\\
+Startup phase & 584 & 5343 & 10.9\%\\
+Project abandoned & 345 & 5343 & 6.5\%\\
+Project not started & 268 & 5343 & 5.0\%\\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[t]{lrrl}
+\caption{\label{tab:value-summary}Value distribution of `world_region` in dataset `data`}\\
+\toprule
+Value & Count & Total & Share\\
+\midrule
+Far East and Central Asia & 1644 & 5343 & 30.8\%\\
+Africa & 977 & 5343 & 18.3\%\\
+South and Central America & 889 & 5343 & 16.6\%\\
+Eastern Europe & 620 & 5343 & 11.6\%\\
+Western Europe & 462 & 5343 & 8.6\%\\
+\addlinespace
+North America & 454 & 5343 & 8.5\%\\
+Middle East & 134 & 5343 & 2.5\%\\
+NA & 83 & 5343 & 1.6\%\\
+Oceania & 80 & 5343 & 1.5\%\\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[t]{lrrl}
+\caption{\label{tab:value-summary}Value distribution of `is_tax_haven` in dataset `desag`}\\
+\toprule
+Value & Count & Total & Share\\
+\midrule
+FALSE & 22536 & 25176 & 89.5\%\\
+TRUE & 2640 & 25176 & 10.5\%\\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[t]{lrrl}
+\caption{\label{tab:value-summary}Value distribution of `role` in dataset `desag`}\\
+\toprule
+Value & Count & Total & Share\\
+\midrule
+Shareholder & 16156 & 25176 & 64.2\%\\
+Operating Company & 3699 & 25176 & 14.7\%\\
+GUO & 2740 & 25176 & 10.9\%\\
+DUO & 987 & 25176 & 3.9\%\\
+CSH & 915 & 25176 & 3.6\%\\
+\addlinespace
+ISH & 679 & 25176 & 2.7\%\\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[t]{lrrl}
+\caption{\label{tab:value-summary}Value distribution of `from_tax_haven` in dataset `investors`}\\
+\toprule
+Value & Count & Total & Share\\
+\midrule
+FALSE & 11507 & 12405 & 92.8\%\\
+TRUE & 898 & 12405 & 7.2\%\\
+\bottomrule
+\end{longtable}
+
+\subsection{How many deals involve tax
+havens?}\label{how-many-deals-involve-tax-havens}
+
+\begin{longtable}[t]{lrrl}
+\caption{\label{tab:deals-involve-TaxHaven}Value distribution of `any_tax_haven` in dataset `deal_taxhaven`}\\
+\toprule
+Value & Count & Total & Share\\
+\midrule
+FALSE & 4025 & 5343 & 75.3\%\\
+TRUE & 1318 & 5343 & 24.7\%\\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[t]{lrrl}
+\caption{\label{tab:deals-involve-TaxHaven}Value distribution of `num_tax` in dataset `deal_taxhaven`}\\
+\toprule
+Value & Count & Total & Share\\
+\midrule
+0 & 4025 & 5343 & 75.3\%\\
+1 & 791 & 5343 & 14.8\%\\
+2 & 281 & 5343 & 5.3\%\\
+3 & 87 & 5343 & 1.6\%\\
+4 & 68 & 5343 & 1.3\%\\
+\addlinespace
+5 & 29 & 5343 & 0.5\%\\
+6 & 20 & 5343 & 0.4\%\\
+7 & 17 & 5343 & 0.3\%\\
+21 & 8 & 5343 & 0.1\%\\
+8 & 6 & 5343 & 0.1\%\\
+\addlinespace
+13 & 6 & 5343 & 0.1\%\\
+12 & 2 & 5343 & 0.0\%\\
+14 & 1 & 5343 & 0.0\%\\
+18 & 1 & 5343 & 0.0\%\\
+20 & 1 & 5343 & 0.0\%\\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}[t]{ccc}
+\caption{\label{tab:deals-involve-TaxHaven}In operation deals involving tax haven investors}\\
+\toprule
+total\_in\_operation & tax\_haven\_deals & share\\
+\midrule
+3446 & 946 & 27.5\%\\
+\bottomrule
+\end{longtable}
+
+To quantify the involvement of tax-haven--registered investors, we
+aggregated the investor-level information in \emph{desag\_data} to the
+deal level. \textbf{A deal is considered to involve a tax haven if at
+least one investor within its ownership chain is registered in a
+jurisdiction listed as a tax haven.}
+
+The results show that \textbf{1318} deals (representing \textbf{24.7\%}
+of all deals) involve at least one tax-haven investor. This indicates
+that tax-haven jurisdictions play a non-negligible role in land
+investment structures, either through shareholders, controlling
+shareholders, or ultimate owners.
+
+When considering only deals currently \textbf{\emph{in operation}},
+\textbf{946} deals out of \textbf{3446} are associated with tax-haven
+investors, corresponding to \textbf{27.5\%}.
+
+\subsection{How many unique investors involve tax
+havens?}\label{how-many-unique-investors-involve-tax-havens}
+
+\begin{longtable}[t]{lrrl}
+\caption{\label{tab:investor-involve-TaxHaven}Value distribution of `is_tax_haven_investor` in dataset `investor_taxhaven`}\\
+\toprule
+Value & Count & Total & Share\\
+\midrule
+FALSE & 11507 & 12405 & 92.8\%\\
+TRUE & 898 & 12405 & 7.2\%\\
+\bottomrule
+\end{longtable}
+
+Across the entire database, we identified \textbf{12,405 unique
+investors} involved in at least one land deal. Among them, \textbf{898
+investors} are registered in jurisdictions classified as tax havens,
+representing \textbf{7.2\%} of all unique investors.
+
+\begin{longtable}[t]{lrrl}
+\caption{\label{tab:investor-from-TaxHaven}Value distribution of `roles` in dataset `taxhaven_roles`}\\
+\toprule
+Value & Count & Total & Share\\
+\midrule
+Shareholder & 366 & 942 & 38.9\%\\
+GUO & 154 & 942 & 16.3\%\\
+CSH & 144 & 942 & 15.3\%\\
+Operating Company & 138 & 942 & 14.6\%\\
+ISH & 102 & 942 & 10.8\%\\
+\addlinespace
+DUO & 38 & 942 & 4.0\%\\
+\bottomrule
+\end{longtable}
+
+\subsection{How does the number of land deals changed over
+time?}\label{how-does-the-number-of-land-deals-changed-over-time}
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{sections/analysis_files/figure-pdf/fig-temporal-distribution-1.pdf}}
+
+}
+
+\caption{\label{fig-temporal-distribution}Temporal distribution of total
+land deals}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{sections/analysis_files/figure-pdf/fig-temporal-distribution-operation-1.pdf}}
+
+}
+
+\caption{\label{fig-temporal-distribution-operation-1}Temporal
+distribution of land deals in operation}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{sections/analysis_files/figure-pdf/fig-temporal-distribution-operation-2.pdf}}
+
+}
+
+\caption{\label{fig-temporal-distribution-operation-2}Temporal
+distribution of land deals in operation}
+
+\end{figure}%
+
 \section{Distribution Patterns}\label{distribution-patterns}
 
 \begin{enumerate}
@@ -323,13 +569,205 @@ accountability} in land governance.
   bar: Top 10 target countries for tax haven investors -\textgreater{}
   Identify the principal countries of investment
 \item
+  bar: Tax haven investments by sector -\textgreater{} Comparing the
+  proportion of tax havens across different investment sectors
+\item
   Map: Global investment flows from tax havens to target countries
   -\textgreater{} Visualising the global investment pathways of tax
   havens
-\item
-  bar: Tax haven investments by sector -\textgreater{} Comparing the
-  proportion of tax havens across different investment sectors
 \end{enumerate}
+
+\subsection{Evolution of tax haven investments over
+time}\label{evolution-of-tax-haven-investments-over-time}
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{sections/analysis_files/figure-pdf/fig-temporal-distribution-taxhaven-1.pdf}}
+
+}
+
+\caption{\label{fig-temporal-distribution-taxhaven}Temporal distribution
+of land deals in operation}
+
+\end{figure}%
+
+\subsection{Top 10 Tax Haven Investor
+Countries}\label{top-10-tax-haven-investor-countries}
+
+\subsubsection{Which tax haven countries exert the strongest influence
+on the global land investment
+network?}\label{which-tax-haven-countries-exert-the-strongest-influence-on-the-global-land-investment-network}
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{sections/analysis_files/figure-pdf/fig-Top10-taxhaven-investor-countries-1.pdf}}
+
+}
+
+\caption{\label{fig-Top10-taxhaven-investor-countries}Top 10 Tax Haven
+Investor Countries(appearances)}
+
+\end{figure}%
+
+\subsubsection{Which countries provide the largest number of offshore
+entities?}\label{which-countries-provide-the-largest-number-of-offshore-entities}
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{sections/analysis_files/figure-pdf/fig-Top10-taxhaven-investor-countries-unique-1.pdf}}
+
+}
+
+\caption{\label{fig-Top10-taxhaven-investor-countries-unique}Top 10 Tax
+Haven Investor Countries(Unique Investors)}
+
+\end{figure}%
+
+\begin{itemize}
+\item
+  \textbf{Singapore is dominant in both frequency and breadth}, meaning
+  it is both a \emph{major offshore incorporation hub} \textbf{and} home
+  to \emph{highly active entities repeatedly participating in deals}.
+\item
+  \textbf{Some jurisdictions (e.g., British Virgin Islands, Cyprus)}
+  show \textbf{high appearance counts relative to the number of unique
+  investors}, suggesting \textbf{a small number of extremely active
+  offshore structures}.
+\item
+  \textbf{Other jurisdictions (e.g., Netherlands, Mauritius)} host
+  \textbf{many distinct offshore investors}, but each investor tends to
+  participate in fewer deals.\\
+  → This pattern reflects \textbf{distributed incorporation} rather than
+  intensive participation.
+\item
+  The comparison reveals \textbf{two different modes of offshore
+  involvement} in land investments: \textbf{Concentrated influence} (few
+  investors, highly active --- e.g., Cyprus, BVI); \textbf{Broad-based
+  incorporation} (many investors, moderate activity --- e.g., the
+  Netherlands, Mauritius).
+\end{itemize}
+
+\subsection{Top 10 target countries for tax haven
+investors}\label{top-10-target-countries-for-tax-haven-investors}
+
+\subsubsection{Which countries attract the most investment from tax
+haven
+investors?}\label{which-countries-attract-the-most-investment-from-tax-haven-investors}
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{sections/analysis_files/figure-pdf/fig-Top10-target-for-taxhaven-1.pdf}}
+
+}
+
+\caption{\label{fig-Top10-target-for-taxhaven}Top 10 Target Countries
+for Tax Haven Investors}
+
+\end{figure}%
+
+\subsubsection{Which countries' land transactions are most affected by
+tax
+havens?}\label{which-countries-land-transactions-are-most-affected-by-tax-havens}
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{sections/analysis_files/figure-pdf/fig-Top10-target-for-taxhaven-mostaffected-1.pdf}}
+
+}
+
+\caption{\label{fig-Top10-target-for-taxhaven-mostaffected}Top 10 Target
+Countries for Tax Haven Investors (Deal-level)}
+
+\end{figure}%
+
+\subsection{Tax haven investments by
+sector}\label{tax-haven-investments-by-sector}
+
+\begin{figure}
+
+\centering{
+
+\begin{longtable}[t]{lrrl}
+\caption{\label{tab:fig-taxhaven-by-sector}Value distribution of `intention_investment_cat` in dataset `desag`}\\
+\toprule
+Value & Count & Total & Share\\
+\midrule
+Agriculture & 11418 & 25176 & 45.4\%\\
+Energy & 4994 & 25176 & 19.8\%\\
+Mining & 4085 & 25176 & 16.2\%\\
+Forestry & 2397 & 25176 & 9.5\%\\
+Industry & 1121 & 25176 & 4.5\%\\
+\addlinespace
+Conservation and Carbon & 664 & 25176 & 2.6\%\\
+Other & 268 & 25176 & 1.1\%\\
+Tourism & 79 & 25176 & 0.3\%\\
+Land speculation & 77 & 25176 & 0.3\%\\
+NA & 73 & 25176 & 0.3\%\\
+\bottomrule
+\end{longtable}
+
+}
+
+\caption{\label{fig-taxhaven-by-sector-1}Tax Haven Investments by Sector
+(Share)}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{sections/analysis_files/figure-pdf/fig-taxhaven-by-sector-1.pdf}}
+
+}
+
+\caption{\label{fig-taxhaven-by-sector-2}Tax Haven Investments by Sector
+(Share)}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{sections/analysis_files/figure-pdf/fig-taxhaven-by-sector-stackedbar-1.pdf}}
+
+}
+
+\caption{\label{fig-taxhaven-by-sector-stackedbar}Tax Haven Involvement
+by Sector (Proportional Stacked Bar)}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{sections/analysis_files/figure-pdf/fig-top10-taxhaven-investor-by-sectot-1.pdf}}
+
+}
+
+\caption{\label{fig-top10-taxhaven-investor-by-sectot}Sector Composition
+of Top 10 Tax Haven Investor Countries}
+
+\end{figure}%
+
+\subsection{map}\label{map}
+
+\pandocbounded{\includegraphics[keepaspectratio]{sections/analysis_files/figure-pdf/fig-Global Investment Flows-1.pdf}}\{\#fig-Global
+Investment Flows\}
+
+\pandocbounded{\includegraphics[keepaspectratio]{sections/analysis_files/figure-pdf/unnamed-chunk-4-1.pdf}}
 
 \section{Network Analysis}\label{network-analysis}
 
@@ -435,6 +873,51 @@ accountability} in land governance.
 \markboth{References}{References}
 
 \phantomsection\label{refs}
+
+\bookmarksetup{startatroot}
+
+\chapter*{Appendix}\label{appendix}
+\addcontentsline{toc}{chapter}{Appendix}
+
+\markboth{Appendix}{Appendix}
+
+\begin{itemize}
+\item
+  List of Tax Haven Countries
+\item
+  List of R packages
+\item
+  Variable Definition Table
+\item
+  Descriptive Summary Table
+\end{itemize}
+
+\begin{longtable}[t]{llc}
+\caption{\label{tab:List of R packages and version}Loaded R packages and their versions}\\
+\toprule
+ & Package & Version\\
+\midrule
+DT & DT & 0.34.0\\
+colorspace & colorspace & 2.1.2\\
+dplyr & dplyr & 1.1.4\\
+ggalluvial & ggalluvial & 0.12.5\\
+ggraph & ggraph & 2.2.2\\
+\addlinespace
+ggrepel & ggrepel & 0.9.6\\
+glue & glue & 1.8.0\\
+here & here & 1.0.2\\
+igraph & igraph & 2.2.1\\
+janitor & janitor & 2.2.1\\
+\addlinespace
+kableExtra & kableExtra & 1.4.0\\
+knitr & knitr & 1.50\\
+patchwork & patchwork & 1.3.2\\
+scales & scales & 1.4.0\\
+sf & sf & 1.0.22\\
+\addlinespace
+tidyverse & tidyverse & 2.0.0\\
+\bottomrule
+\end{longtable}
 
 
 

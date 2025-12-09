@@ -6,7 +6,8 @@
 required_packages <- c(
   "tidyverse", "janitor", "here", "igraph", "ggraph", "ggrepel",
   "scales", "glue", "knitr", "kableExtra", "sf", "patchwork",
-  "dplyr", "ggalluvial", "DT"
+  "dplyr", "ggalluvial", "DT","colorspace", "patchwork", "networkD3"
+
 )
 
 invisible(lapply(required_packages, function(pkg) {
@@ -25,32 +26,40 @@ pkg_versions_df <- data.frame(
 
 # =================================================
 # =========== Read Data ===========================
-data <- read_csv(here("data", "data.csv")) |> janitor::clean_names()
-desag <- read_csv(here("data", "desag_data.csv")) |> janitor::clean_names()
-investors <- read_csv(here("data", "investors.csv")) |> janitor::clean_names()
 tax_haven <- read_csv(here("data", "tax_haven_list.csv")) |> janitor::clean_names()
+iso_map <- read_csv(here("data", "iso_country_code.csv"), na = character()) |> janitor::clean_names() |>
+  rename(iso2 = alpha_2_code, iso3 = alpha_3_code) |> select(iso2, iso3)
 
-# link tax_haven_list.csv to desag_data.csv
-desag <- desag |>
-  rename(country_iso2 = country) |>
-  left_join(
-    tax_haven |>
-      select(iso2) |>
-      mutate(is_tax_haven = TRUE),
-    by = c("country_iso2" = "iso2")
-  ) |>
-  mutate(is_tax_haven = replace_na(is_tax_haven, FALSE))
 
-# link tax_haven_list.csv to investors.csv
-investors <- investors |>
-  rename(country_iso2 = country) |>
+# read "investors":
+investors <- read_csv(here("data", "investors_cleaned.csv")) |> janitor::clean_names() |>
+  
+  # link with tax haven list using iso3
   left_join(
-    tax_haven |>
-      select(iso2) |>
-      mutate(from_tax_haven = TRUE),
-    by = c("country_iso2" = "iso2")
+    tax_haven |> transmute(iso3, from_tax_haven = TRUE),
+    by = c("country_iso3" = "iso3")
   ) |>
-  mutate(from_tax_haven = replace_na(from_tax_haven, FALSE))
+  mutate(from_tax_haven = replace_na(from_tax_haven, FALSE)) 
+  
+
+# read "desag":
+desag <- read_csv(here("data", "desag_cleaned.csv")) |> janitor::clean_names() |>
+  
+  # mark: investor is from tax haven
+  left_join(tax_haven |> transmute(iso3, is_tax_haven = TRUE),
+            by = c("country_iso3" = "iso3")) |>
+  mutate(is_tax_haven = replace_na(is_tax_haven, FALSE)) 
+
+# read "data":
+data <- read_csv(here("data", "data.csv")) |> 
+  janitor::clean_names() |> 
+  mutate(country_iso_code = if_else(country == "Namibia", "NA", country_iso_code)) |> 
+  
+  # convert operating company ISO2 → ISO3
+  left_join(iso_map,
+            by = c("country_iso_code" = "iso2")) |>
+  rename(country_iso3_code = iso3)
+
 
 # !!! in coutries.json, for one iso2 there are more than one country or region matched
 # so here I use countries_sf_all to keep all the region
@@ -60,7 +69,61 @@ countries_sf_main <- countries_sf_all |>
   group_by(ISO) |>
   slice_max(SHAPE_Area, n = 1, with_ties = FALSE) |>              
   ungroup() |>
-  select(COUNTRY, ISO, COUNTRYAFF, AFF_ISO, geometry)
+  select(COUNTRY, ISO, COUNTRYAFF, AFF_ISO, geometry) |>
+  left_join(iso_map, by = c("ISO" = "iso2")) 
+
+#==================================================================================
+# ============ classify for current_intention_of_investment========================
+# 1) Preprocessing------------------------------------------------------------
+# Standardize case, remove spaces, and correct the misspelling CONVERSATION to CONSERVATION.
+desag <- desag |>
+  mutate(
+    current_intention_of_investment = current_intention_of_investment |>
+      toupper() |> str_trim(),
+    current_intention_of_investment = str_replace_all(
+      current_intention_of_investment,
+      "\\bCONVERSATION\\b", "CONSERVATION"
+    )
+  )
+
+# 2) Definition of classification detection function-----------------------------
+# whether it contains certain keywords
+has_any <- function(x, patterns) 
+  str_detect(x, str_c("\\b(", str_c(patterns, collapse="|"), ")\\b"))
+
+# 3) Rule: Process by priority using CASE WHEN (stop upon first match)-----------
+desag <- desag |>
+  mutate(
+    intention_investment_cat = case_when(
+      is.na(current_intention_of_investment) | current_intention_of_investment == "" ~ "NA",
+      
+      has_any(current_intention_of_investment,
+              c("BIOFUELS","RENEWABLE_ENERGY","WIND_FARM","SOLAR_PARK",
+                "OIL_GAS_EXTRACTION","BIOMASS_ENERGY_GENERATION")) ~ "Energy",
+      
+      has_any(current_intention_of_investment, c("MINING")) ~ "Mining",
+      
+      has_any(current_intention_of_investment,
+              c("FOOD_CROPS","NON_FOOD_AGRICULTURE","LIVESTOCK","FODDER",
+                "AGRICULTURE_UNSPECIFIED")) ~ "Agriculture",
+      
+      has_any(current_intention_of_investment,
+              c("CONSERVATION","CARBON")) ~ "Conservation and Carbon",
+      
+      has_any(current_intention_of_investment,
+              c("FOREST_LOGGING","TIMBER_PLANTATION","FORESTRY_UNSPECIFIED")) ~ "Forestry",
+      
+      has_any(current_intention_of_investment, c("TOURISM")) ~ "Tourism",
+      
+      has_any(current_intention_of_investment, c("INDUSTRY")) ~ "Industry",
+      
+      has_any(current_intention_of_investment, c("LAND_SPECULATION")) ~ "Land speculation",
+      
+      has_any(current_intention_of_investment, c("OTHER")) ~ "Other",
+      
+      TRUE ~ "Other" 
+    )
+  )
 
 #=========================================================
 # ============ Custom Functions ==========================
